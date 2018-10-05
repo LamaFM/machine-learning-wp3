@@ -1,0 +1,1 @@
+"0","pred = predict(model2, newdata = testing_set[c(3,4)], type = ""response"")"

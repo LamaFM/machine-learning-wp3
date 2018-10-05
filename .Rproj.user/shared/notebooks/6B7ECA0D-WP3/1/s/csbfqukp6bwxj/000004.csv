@@ -1,0 +1,1 @@
+"0","coef(summary(model2))%>%kable()%>%kable_styling()"

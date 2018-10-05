@@ -1,0 +1,2 @@
+"0","library(ggplot2)"
+"0","ggplot(training_set, aes(x = Age, y = Purchased))  + geom_point() + stat_smooth(method=""glm"", method.args=list(family=""binomial""), se=FALSE)"

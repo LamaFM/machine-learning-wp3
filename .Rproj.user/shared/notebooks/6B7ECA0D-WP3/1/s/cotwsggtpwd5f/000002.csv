@@ -1,0 +1,1 @@
+"0","model2 = glm(Purchased ~ Age + EstimatedSalary, family = binomial, data=training_set)"

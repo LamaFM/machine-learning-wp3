@@ -1,0 +1,2 @@
+"0","rb1 = kable(summary(unscaled_training_set[c(3,4)]), format = ""latex"", col.names = c(""Unscaled Training Set"", """" ))"
+"0","rb2 = kable(summary(training_set[c(3,4)]), col.names = c(""Scaled Training Set"", """"))"

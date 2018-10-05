@@ -1,0 +1,4 @@
+"0","training_set = unscaled_training_set"
+"0","training_set[c(3,4)] = scale(unscaled_training_set[c(3,4)])"
+"0","testing_set = unscaled_testing_set"
+"0","testing_set[c(3,4)] = scale(unscaled_testing_set[c(3,4)])"

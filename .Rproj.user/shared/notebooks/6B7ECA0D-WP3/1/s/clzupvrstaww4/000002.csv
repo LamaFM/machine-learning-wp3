@@ -1,0 +1,28 @@
+"0","confusion_matrix"
+"1","   sorted_pred
+"
+"1","   "
+"1","  0"
+"1","  1"
+"1","
+  0"
+"1"," 57"
+"1","  7"
+"1","
+  1"
+"1"," 10"
+"1"," 26"
+"1","
+"
+"0","library(caret)"
+"2","Le chargement a nécessité le package : lattice
+"
+"2","
+Attachement du package : ‘caret’
+
+"
+"2","The following objects are masked from ‘package:ModelMetrics’:
+
+    confusionMatrix, precision, recall, sensitivity, specificity
+
+"

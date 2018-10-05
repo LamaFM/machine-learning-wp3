@@ -1,0 +1,3 @@
+"0","split = sample.split(SNA$Purchased, SplitRatio = 0.75)"
+"0","unscaled_training_set = subset(SNA, split == TRUE)"
+"0","unscaled_testing_set = subset(SNA, split == FALSE)"

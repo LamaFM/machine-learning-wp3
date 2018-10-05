@@ -1,0 +1,186 @@
+---
+title: "PW3 : Logistic Regression"
+author: "Florian Marc, ESILV A4 IBO4"
+date: "5 octobre 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(kableExtra)
+```
+
+For this practical work, I'll be using the packages ```knitr``` and ```kableExtra``` for formatting the report.
+
+__1.__ Import dataset
+```{r}
+SNA = read.csv("Social_Network_Ads.csv", header = TRUE, sep = ",")
+```
+
+
+
+__2.__ Describe dataset
+```{r}
+str(SNA)
+```
+```{r eval=FALSE}
+summary(SNA)
+```
+```{r echo=FALSE}
+kable(summary(SNA), format="html")%>%kable_styling()
+```
+The dataset has 4 explanatory variables and 400 observations. Considering the median age and revenue, we can say that 50% of the population is under 37 and earns less than 70000$ a year.
+
+
+__3.__ Let's split the dataset randomly.
+
+```{r}
+library(caTools)
+```
+We'll be using a seed so that every time the script is used, we get the same results :
+```{r}
+set.seed(seed = 123)
+```
+The data set is split randomly with a __75%__ training, __25%__ testing ratio.
+```{r}
+split = sample.split(SNA$Purchased, SplitRatio = 0.75)
+unscaled_training_set = subset(SNA, split == TRUE)
+unscaled_testing_set = subset(SNA, split == FALSE)
+```
+
+__4.__According to the subject, the inputs of the dataset are ```Age``` and ```Estimated Salary```.
+Let's copy our dataset first
+```{r eval=FALSE, echo=TRUE}
+training_set = unscaled_training_set
+testing_set = unscaled_testing_set
+```
+
+In order to be able to interpret the Intersect value of our model, we must first scale our inputs(i.e. normalize them):
+```{r eval=FALSE, echo=TRUE}
+training_set[c(3,4)] = scale(unscaled_training_set[c(3,4)])
+testing_set[c(3,4)] = scale(unscaled_testing_set[c(3,4)])
+```
+```{r eval=TRUE, echo=FALSE}
+training_set = unscaled_training_set
+training_set[c(3,4)] = scale(unscaled_training_set[c(3,4)])
+testing_set = unscaled_testing_set
+testing_set[c(3,4)] = scale(unscaled_testing_set[c(3,4)])
+```
+Let's summarize the two models to see the difference
+```{r eval=FALSE, echo=TRUE}
+summary(unscaled_training_set[c(3,4)])
+summary(training_set[c(3,4)])
+```
+
+```{r echo=FALSE}
+summary(unscaled_training_set[c(3,4)])%>%kable()%>%kable_styling()
+summary(training_set[c(3,4)])%>%kable()%>%kable_styling()
+```
+
+  __5.__ Let's perform a simple logistic regression of ```Purchased``` by ```Age``` on our dataset.
+```{r}
+model = glm(Purchased ~ Age, family = binomial, data = training_set)
+summary(model)
+```
+__6.__ We chose ```family = binomial``` because our model follows a Bernoulli's Law  
+__7.__ The equation of our model is as follow $$P(x) =\frac{e^{\beta_0\beta_1X}}{1+e^{\beta_0\beta_1X}} $$ i.e.
+$$P(x) =\frac{e^{`r coef(summary(model))[1,1]`\times`r coef(summary(model))[2,1]`X}}{1+e^{`r coef(summary(model))[1,1]`\times`r coef(summary(model))[2,1]`X}} $$
+__8.__ To know if the feature ```Age``` is significant, let's take a look at the __p-value__ of our model :  
+```{r eval=FALSE}
+coef(summary(model)
+```
+```{r echo=FALSE}
+coef(summary(model))%>%kable()%>%kable_styling()
+```
+
+As we can see, the __p-value__ of our model is `r coef(summary(model))[1,4]`, which is way below 1% : our model is therefore __significant__.  
+
+
+__9.__ Let's find the __AIC__ of our model:
+```{r}
+AIC(model)
+```
+__10.__ Let's plot ```Purchased``` in function of ```Age```. I'll be using the ```ggplot2``` package.
+```{r}
+library(ggplot2)
+ggplot(training_set, aes(x = Age, y = Purchased))  + geom_point() + stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+```
+
+__11.__ Let's perform a logistic regression of ```Purchase``` in function of ```Age``` and ```EstimatedSalary```
+```{r}
+model2 = glm(Purchased ~ Age + EstimatedSalary, family = binomial, data=training_set)
+```
+__12.__ Let's take a look at the summary of the model : 
+```{r eval=FALSE}
+coef(summary(model2))
+```
+```{r echo=FALSE}
+coef(summary(model2))%>%kable()%>%kable_styling()
+```
+The __p-value__ of the model is `r coef(summary(model2))[1,4]` which is a really small value. The predictors are significant. 
+
+__13.__ As we can see, the __p-value__ of the model has decreased, from `r coef(summary(model))[1,4]` to `r coef(summary(model2))[1,4]`. We can therefore tell that the model got slightly better by adding ```EstimatedSalary```
+
+__14.__ Let's predict the probability of the user purchasing the product according to our second model.
+```{r}
+pred = predict(model2, newdata = testing_set[c(3,4)], type = "response")
+```
+
+__15.__ Let's take a look at the predicted values for ```Purchased``` by transforming them to zeros and ones (1 if > 0.5):
+```{r}
+sorted_pred = ifelse(pred > 0.5, 1, 0)
+```
+
+__16.__ Let's compute the confusion_matrix out of our predictions
+```{r}
+confusion_matrix = table(testing_set[,5], sorted_pred)
+```
+```{r echo = FALSE}
+confusion_matrix
+library(caret)
+```
+__17.__ Let's calculate the accuracy, specificity, sensitivity and the precision of the model.
+
+* Accuracy (Sum of __True Positive__ and __False Negative__ over __Total Population__:
+```{r}
+accuracy = (confusion_matrix[1,1] + confusion_matrix[2,2]) / (confusion_matrix[1,1] + confusion_matrix[1,2] + confusion_matrix[2,1] + confusion_matrix[2,2])
+```
+```{r echo=FALSE}
+accuracy
+```
+* Specificity (number of __True Negative__ over number of __Condition Negative__): 
+```{r}
+specificity = confusion_matrix[2,2]  / (confusion_matrix[2,1] + confusion_matrix[2,2])
+```
+```{r echo=FALSE}
+specificity
+```
+
+* Sensivity (number of __True Positive__ over number of __Condition Positive__):
+```{r}
+sensivity = confusion_matrix[1,1]  / (confusion_matrix[1,1] + confusion_matrix[1,2])
+```
+```{r echo=FALSE}
+sensivity
+```
+* Precision (number of __True Positive__ over number of __Test Outcome Positive__):
+```{r}
+precision = sensivity = confusion_matrix[1,1]  / (confusion_matrix[1,1] + confusion_matrix[2,1])
+```
+```{r echo=FALSE}
+precision
+```
+
+__18.__ Let's plot the ROC curve and calculate AUC value.
+```{r message=FALSE}
+library(ROCR)
+```
+
+```{r}
+score = prediction(pred, testing_set[,5])
+performance(score, "auc")
+plot(performance(score,"tpr","fpr"),col="green")
+abline(0,1,lty=8)
+```
+
